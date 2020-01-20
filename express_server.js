@@ -16,6 +16,10 @@ const generateRandomString = () =>
     .toString(36)
     .slice(2, 8);
 
+const updateUrlDatabase = (short, long) => {
+  urlDatabase[short] = long;
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -39,8 +43,13 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);
-  console.log(generateRandomString());
-  res.send("Ok");
+  const shortName = generateRandomString();
+  updateUrlDatabase(shortName, `http://${req.body.longURL}`);
+  const templateVars = {
+    shortURL: shortName,
+    longURL: req.body.longURL
+  };
+  res.render("urls_show", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
