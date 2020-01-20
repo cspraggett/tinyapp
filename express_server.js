@@ -45,11 +45,7 @@ app.post("/urls", (req, res) => {
   console.log(req.body);
   const shortName = generateRandomString();
   updateUrlDatabase(shortName, `http://${req.body.longURL}`);
-  const templateVars = {
-    shortURL: shortName,
-    longURL: req.body.longURL
-  };
-  res.render("urls_show", templateVars);
+  res.redirect(`urls/${shortName}`);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
