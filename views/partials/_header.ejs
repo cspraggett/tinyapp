@@ -18,8 +18,8 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <% if(!username){ %>
     <form method="POST" action="/login" class="form-inline my-2 my-lg-0">
-      <h3><%= [username] %></h3>
       <input
         class="justify-content-center"
         type="text"
@@ -28,8 +28,16 @@
         placeholder="Username"
       />
       <button type="submit" class="btn btn-outline-dark">
-        Update
+        Login
       </button>
     </form>
+    <% } else{ %>
+    <form method="POST" action="/logout" class="form-inline my-2 my-lg-0">
+      <h3><%= username %></h3>
+      <button type="submit" class="btn btn-outline-dark">
+        Logout
+      </button>
+    </form>
+    <% } %>
   </nav>
 </header>
