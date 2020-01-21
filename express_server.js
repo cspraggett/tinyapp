@@ -42,10 +42,16 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
   const shortName = generateRandomString();
   updateUrlDatabase(shortName, `http://${req.body.longURL}`);
-  res.redirect(`urls/${shortName}`);
+  // console.log(urlDatabase);
+  res.redirect(`/urls/${shortName}`);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  console.log(longURL);
+  res.redirect(longURL);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
