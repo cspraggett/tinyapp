@@ -72,6 +72,11 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortName}`);
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("login", templateVars);
+});
+
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
@@ -80,6 +85,8 @@ app.post("/logout", (req, res) => {
   res.clearCookie("username");
   res.redirect("/urls");
 });
+
+app.post("/login", (req, res) => {});
 
 app.get("/register", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
@@ -138,3 +145,18 @@ app.post("/register", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+{
+  /* <form method="POST" action="/login" class="form-inline my-2 my-lg-0">
+      <input
+        class="justify-content-center"
+        type="text"
+        name="username"
+        style="width: 300px; height: 45px; margin: 1em;"
+        placeholder="Username"
+      />
+      <button type="submit" class="btn btn-outline-dark">
+        Login
+      </button>
+    </form> */
+}
