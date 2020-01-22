@@ -13,6 +13,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
+
 const generateRandomString = () =>
   Math.random()
     .toString(36)
@@ -20,6 +33,15 @@ const generateRandomString = () =>
 
 const updateUrlDatabase = (short, long) => {
   urlDatabase[short] = long;
+};
+
+const checkUsersEmailExists = email => {
+  for (const key in users) {
+    if (users[key].email === email) {
+      return true;
+    }
+  }
+  return false;
 };
 
 app.get("/", (req, res) => {
@@ -60,6 +82,11 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render("register", templateVars);
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     username: req.cookies["username"],
@@ -86,6 +113,24 @@ app.post("/login", (req, res) => {
   const uName = req.body.username;
 
   res.cookie("username", uName);
+  res.redirect("/urls");
+});
+
+app.post("/register", (req, res) => {
+  const id = generateRandomString();
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(400).send("Please fill out email and password");
+  }
+  if (checkUsersEmailExists(email)) {
+    res.status(400).send("Email already in use!");
+  }
+  users[id] = {
+    id,
+    email,
+    password
+  };
+  res.cookie("user_id", id);
   res.redirect("/urls");
 });
 
