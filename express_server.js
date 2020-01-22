@@ -2,7 +2,12 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcrypt");
 const PORT = 8080;
+
+const password = "123";
+const hashedPassword = bcrypt.hashSync(password, 10);
+console.log(hashedPassword);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -17,14 +22,16 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "cspraggett@gmail.com",
-    password: "123"
+    password: "$2b$10$XvPyZkhoSyzAk.Tbmfh/d.P/wnpGZ82lJ.4xeCxWejpdfvKhHW/6i"
   },
   user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
+    id: "user1",
+    email: "user@example.com",
+    password: "$2b$10$S/YVIkf6SNHTmZi12eoDVO3Ie5zH8nGt7AVJdVBTKg2BaWxM/bmm2"
   }
 };
+
+const hashPassword = password => bcrypt.hashSync(password, 10);
 
 const generateRandomString = () =>
   Math.random()
@@ -155,8 +162,9 @@ app.post("/login", (req, res) => {
   if (!ID) {
     res.status(403).send("e-mail not found!");
   }
-  if (users[ID].password !== password) {
+  if (!bcrypt.compareSync(password, users[ID].password)) {
     res.status(403).send("Password incorrect!");
+    return;
   }
   res.cookie("user_id", ID);
   res.redirect("/urls");
@@ -174,8 +182,9 @@ app.post("/register", (req, res) => {
   users[id] = {
     id,
     email,
-    password
+    password: hashPassword(password)
   };
+  console.log(users[id].password);
   res.cookie("user_id", id);
   res.redirect("/urls");
 });
