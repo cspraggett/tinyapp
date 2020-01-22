@@ -16,8 +16,8 @@ const urlDatabase = {
 const users = {
   userRandomID: {
     id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    email: "cspraggett@gmail.com",
+    password: "123"
   },
   user2RandomID: {
     id: "user2RandomID",
@@ -38,7 +38,7 @@ const updateUrlDatabase = (short, long) => {
 const checkUsersEmailExists = email => {
   for (const key in users) {
     if (users[key].email === email) {
-      return true;
+      return key;
     }
   }
   return false;
@@ -81,12 +81,11 @@ app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
+
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
-
-app.post("/login", (req, res) => {});
 
 app.get("/register", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
@@ -99,6 +98,7 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]
   };
+  console.log("tpv", templateVars);
   res.render("urls_show", templateVars);
 });
 
@@ -116,9 +116,18 @@ app.post("/urls/:shortURL/update", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const uName = req.body.username;
-
-  res.cookie("username", uName);
+  const { email, password } = req.body;
+  const ID = checkUsersEmailExists(email);
+  console.log("id:", ID);
+  if (!ID) {
+    res.status(403).send("e-mail not found!");
+  }
+  if (users[ID].password !== password) {
+    res.status(403).send("Password incorrect!");
+  }
+  console.log("before:", req.cookies["user_id"]);
+  res.cookie("user_id", ID);
+  console.log("after:", req.cookies["user_id"]);
   res.redirect("/urls");
 });
 
@@ -145,18 +154,3 @@ app.post("/register", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-{
-  /* <form method="POST" action="/login" class="form-inline my-2 my-lg-0">
-      <input
-        class="justify-content-center"
-        type="text"
-        name="username"
-        style="width: 300px; height: 45px; margin: 1em;"
-        placeholder="Username"
-      />
-      <button type="submit" class="btn btn-outline-dark">
-        Login
-      </button>
-    </form> */
-}
