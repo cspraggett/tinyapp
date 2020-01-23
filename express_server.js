@@ -1,4 +1,5 @@
 const express = require('express');
+const {getUsersByEmail} = require('./helpers');
 
 const app = express();
 const bodyParser = require('body-parser');
@@ -45,8 +46,7 @@ const updateUrlDatabase = (short, longURL, userID) => {
   urlDatabase[short] = { longURL, userID };
 };
 
-// Checks if email is in the users object. Returns the userID if true and the empty string if false.
-const getUsersByEmail = (email, user) => Object.keys(user).filter((v) => email === user[v].email).join('');
+
 
 const urlsForUser = (id) => {
   const ret = {};
@@ -158,6 +158,7 @@ app.post('/login', (req, res) => {
   console.log(ID);
   if (!ID) {
     res.status(403).send('e-mail not found!');
+    return;
   }
   if (!bcrypt.compareSync(password, users[ID].password)) {
     res.status(403).send('Password incorrect!');
@@ -172,9 +173,11 @@ app.post('/register', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     res.status(400).send('Please fill out email and password');
+    return;
   }
   if (getUsersByEmail(email, users)) {
     res.status(400).send('Email already in use!');
+    return;
   }
   users[id] = {
     id,
