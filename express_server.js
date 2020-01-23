@@ -5,10 +5,6 @@ const cookiesession = require("cookie-session");
 const bcrypt = require("bcrypt");
 const PORT = 8080;
 
-const password = "123";
-const hashedPassword = bcrypt.hashSync(password, 10);
-console.log(hashedPassword);
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cookiesession({
@@ -46,7 +42,6 @@ const generateRandomString = () =>
 
 const updateUrlDatabase = (short, longURL, userID) => {
   urlDatabase[short] = { longURL, userID };
-  console.log(urlDatabase);
 };
 
 const checkUsersEmailExists = email => {
@@ -114,8 +109,8 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  const long = urlDatabase[req.params.shortURL].longURL;
+  res.redirect(long);
 });
 
 app.post("/logout", (req, res) => {
@@ -137,12 +132,12 @@ app.get("/urls/:shortURL", (req, res) => {
       );
     return;
   }
+  console.log(req.params);
   let templateVars = {
-    user: users[req.session.user_id],
+    user: urlDatabase[req.params.shortURL].userID,
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL].longURL
   };
-  console.log(templateVars);
   res.render("urls_show", templateVars);
 });
 
