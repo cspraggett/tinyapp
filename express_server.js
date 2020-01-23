@@ -1,10 +1,10 @@
 const express = require('express');
-const {getUsersByEmail} = require('./helpers');
 
 const app = express();
 const bodyParser = require('body-parser');
 const cookiesession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const { getUsersByEmail, getUrlsForUser } = require('./helpers');
 
 const PORT = 8080;
 
@@ -46,18 +46,6 @@ const updateUrlDatabase = (short, longURL, userID) => {
   urlDatabase[short] = { longURL, userID };
 };
 
-
-
-const urlsForUser = (id) => {
-  const ret = {};
-  for (const keys in urlDatabase) {
-    if (urlDatabase[keys].userID === id) {
-      ret[keys] = urlDatabase[keys].longURL;
-    }
-  }
-  return ret;
-};
-
 app.get('/', (req, res) => {
   res.send('Hello!');
 });
@@ -73,7 +61,7 @@ app.get('/hello', (req, res) => {
 app.get('/urls', (req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
-    urls: urlsForUser(req.session.user_id),
+    urls: getUrlsForUser(req.session.user_id, urlDatabase),
   };
   res.render('urls_index', templateVars);
 });
@@ -129,10 +117,11 @@ app.get('/urls/:shortURL', (req, res) => {
     return;
   }
   const templateVars = {
-    user: urlDatabase[req.params.shortURL].userID,
+    user: users[req.session.user_id],
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
   };
+  console.log('url/:short-',templateVars);
   res.render('urls_show', templateVars);
 });
 
@@ -155,7 +144,7 @@ app.post('/urls/:shortURL/update', (req, res) => {
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const ID = getUsersByEmail(email, users);
-  console.log(ID);
+  console.log('in /login:', ID);
   if (!ID) {
     res.status(403).send('e-mail not found!');
     return;

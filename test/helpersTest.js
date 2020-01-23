@@ -1,6 +1,6 @@
-const {assert} = require('chai');
+const { assert } = require('chai');
 
-const {getUsersByEmail} = require('../helpers');
+const { getUsersByEmail } = require('../helpers');
 
 const testUsers = {
   userRandomID: {
@@ -12,13 +12,27 @@ const testUsers = {
     id: 'user1',
     email: 'user@example.com',
     password: '$2b$10$S/YVIkf6SNHTmZi12eoDVO3Ie5zH8nGt7AVJdVBTKg2BaWxM/bmm2',
-  }
+  },
+};
+
+const testURLs =  {
+  b2xVn2: { longURL: 'http://www.lighthouselabs.ca', userID: 'userRandomID' },
+  '9sm5xK': { longURL: 'http://www.google.com', userID: 'userRandomID' },
 };
 
 describe('getUsersByEmail', () => {
   it('should return a user with valid email', () => {
-    const user = getUsersByEmail('cspraggett@gmail.com', testUsers)
+    const user = getUsersByEmail('cspraggett@gmail.com', testUsers);
     const expectedOutput = 'userRandomID';
     assert.equal(user, expectedOutput);
-  })
+  });
+
+  it('should return a user with valid email', () => {
+    const user = getUsersByEmail('user@example.com', testUsers);
+    const expectedOutput = 'user2RandomID';
+    assert.equal(user, expectedOutput);
+  });
+  it('should return undefined with an invalid email', () => {
+    assert.isUndefined(getUsersByEmail('notARealEmail@example.com', testUsers));
+  });
 });
