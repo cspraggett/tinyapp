@@ -18,4 +18,15 @@ const getUrlsForUser = (id, urlDB) => {
   return ret;
 };
 
-module.exports = { getUsersByEmail, getUrlsForUser };
+const generateRandomString = () => Math.random()
+  .toString(36)
+  .slice(2, 8);
+
+  const updateUrlDatabase = (short, longURL, userID, urlDB) => {
+    console.log('====== SHORT:', short, '======== LONG:', longURL)
+    longURL = longURL.includes('http://') ? longURL : 'http://' + longURL;
+    urlDB[short] = { longURL, userID };
+    console.log('in updateURL:', urlDB);
+  };
+
+module.exports = { getUsersByEmail, getUrlsForUser, generateRandomString, updateUrlDatabase };
