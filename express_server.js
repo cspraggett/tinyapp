@@ -4,7 +4,9 @@ const app = express();
 const bodyParser = require('body-parser');
 const cookiesession = require('cookie-session');
 const bcrypt = require('bcrypt');
-const { getUsersByEmail, getUrlsForUser, generateRandomString, updateUrlDatabase } = require('./helpers');
+const {
+  getUsersByEmail, getUrlsForUser, generateRandomString, updateUrlDatabase,
+} = require('./helpers');
 
 const PORT = 8080;
 
@@ -62,7 +64,7 @@ app.get('/urls/new', (req, res) => {
   const templateVars = { user: users[req.session.user_id] };
   if (!templateVars.user) {
     res.statusCode = 401;
-    res.redirect('/urls');
+    res.redirect('/login');
     return;
   }
   res.render('urls_new', templateVars);
@@ -73,7 +75,7 @@ app.post('/urls', (req, res) => {
   updateUrlDatabase(
     shortName,
     `http://${req.body.longURL}`,
-    req.session.user_id, urlDatabase
+    req.session.user_id, urlDatabase,
   );
   res.redirect(`/urls/${shortName}`);
 });
@@ -84,9 +86,6 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/u/:shortURL', (req, res) => {
-  console.log('in/u/:short-', urlDatabase);
-  console.log('shortUrl: ', req.params.shortURL);
-  console.log(urlDatabase[req.params.shortURL]);
   res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
 
@@ -101,20 +100,28 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
-    res
-      .status(401)
-      .send(
-        'Urls can only be edited by the user who created them, please register or login',
-      );
-    return;
-  }
-
   const templateVars = {
     user: users[req.session.user_id],
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
+    urls: getUrlsForUser(req.session.user_id, urlDatabase),
   };
+  if (!req.session.user_id) {
+    templateVars.message = 'You must be logged in to see this page';
+    res.render('error', templateVars);
+    return;
+  }
+  if (!urlDatabase[req.params.shortURL]) {
+    console.log('not here!');
+    templateVars.message = 'That URL does not exist';
+    res.render('error', templateVars);
+    return;
+  }
+  if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
+    templateVars.message = 'You can only edit URLs that you have created';
+    res.render('error', templateVars);
+    return;
+  }
+  templateVars.shortURL = req.params.shortURL;
+  templateVars.longURL = urlDatabase[req.params.shortURL].longURL;
   res.render('urls_show', templateVars);
 });
 
@@ -129,8 +136,8 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/urls/:shortURL/update', (req, res) => {
   const short = req.params.shortURL;
   if (urlDatabase[short].userID === req.session.user_id) {
-    //urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-    updateUrlDatabase(short, req.body.longURL,urlDatabase[short].userID, urlDatabase )
+    // urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+    updateUrlDatabase(short, req.body.longURL, urlDatabase[short].userID, urlDatabase);
   }
   res.redirect('/urls');
 });

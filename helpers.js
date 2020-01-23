@@ -22,11 +22,12 @@ const generateRandomString = () => Math.random()
   .toString(36)
   .slice(2, 8);
 
-  const updateUrlDatabase = (short, longURL, userID, urlDB) => {
-    console.log('====== SHORT:', short, '======== LONG:', longURL)
-    longURL = longURL.includes('http://') ? longURL : 'http://' + longURL;
-    urlDB[short] = { longURL, userID };
-    console.log('in updateURL:', urlDB);
-  };
+const updateUrlDatabase = (short, longURL, userID, urlDB) => {
+  const lURL = longURL.includes('http://') ? longURL : `http://${longURL}`;
+  urlDB[short] = { longURL: lURL, userID };
+  console.log('made a new one:', urlDB);
+};
 
-module.exports = { getUsersByEmail, getUrlsForUser, generateRandomString, updateUrlDatabase };
+module.exports = {
+  getUsersByEmail, getUrlsForUser, generateRandomString, updateUrlDatabase,
+};
