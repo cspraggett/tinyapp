@@ -39,7 +39,7 @@ const users = {
 const hashPassword = (password) => bcrypt.hashSync(password, 10);
 
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  res.redirect(req.session.user_id ? '/urls' : '/login');
 });
 
 app.get('/urls.json', (req, res) => {
@@ -101,14 +101,14 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  // if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
-  //   res
-  //     .status(401)
-  //     .send(
-  //       'Urls can only be edited by the user who created them, please register or login',
-  //     );
-  //   return;
-  // }
+  if (urlDatabase[req.params.shortURL].userID !== req.session.user_id) {
+    res
+      .status(401)
+      .send(
+        'Urls can only be edited by the user who created them, please register or login',
+      );
+    return;
+  }
 
   const templateVars = {
     user: users[req.session.user_id],
