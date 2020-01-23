@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 
-const { getUsersByEmail } = require('../helpers');
+const { getUsersByEmail, getUrlsForUser } = require('../helpers');
 
 const testUsers = {
   userRandomID: {
@@ -15,7 +15,7 @@ const testUsers = {
   },
 };
 
-const testURLs =  {
+const testURLs = {
   b2xVn2: { longURL: 'http://www.lighthouselabs.ca', userID: 'userRandomID' },
   '9sm5xK': { longURL: 'http://www.google.com', userID: 'userRandomID' },
 };
@@ -34,5 +34,16 @@ describe('getUsersByEmail', () => {
   });
   it('should return undefined with an invalid email', () => {
     assert.isUndefined(getUsersByEmail('notARealEmail@example.com', testUsers));
+  });
+  it('should return { Object (b2xVn2, 9sm5xK) } with user: userRandomID', () => {
+    const actual = getUrlsForUser('userRandomID', testURLs);
+    const expectedOutput = {
+      b2xVn2: 'http://www.lighthouselabs.ca',
+      '9sm5xK': 'http://www.google.com',
+    };
+    assert.deepEqual(actual, expectedOutput);
+  });
+  it('should return {} when passed in user2RandomID', () => {
+    assert.deepEqual(getUrlsForUser('user2RandomID', testURLs), {});
   });
 });

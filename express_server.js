@@ -121,7 +121,7 @@ app.get('/urls/:shortURL', (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
   };
-  console.log('url/:short-',templateVars);
+  console.log('url/:short-', templateVars);
   res.render('urls_show', templateVars);
 });
 
