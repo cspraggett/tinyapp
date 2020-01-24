@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const {
   getUsersByEmail, getUrlsForUser, generateRandomString, updateUrlDatabase,
 } = require('./helpers');
+const { urlDatabase, users } = require('./data');
 
 const PORT = 8080;
 
@@ -19,24 +20,6 @@ app.use(
   }),
 );
 app.set('view engine', 'ejs');
-
-const urlDatabase = {
-  b2xVn2: { longURL: 'http://www.lighthouselabs.ca', userID: 'userRandomID' },
-  '9sm5xK': { longURL: 'http://www.google.com', userID: 'userRandomID' },
-};
-
-const users = {
-  userRandomID: {
-    id: 'userRandomID',
-    email: 'cspraggett@gmail.com',
-    password: '$2b$10$XvPyZkhoSyzAk.Tbmfh/d.P/wnpGZ82lJ.4xeCxWejpdfvKhHW/6i',
-  },
-  user2RandomID: {
-    id: 'user1',
-    email: 'user@example.com',
-    password: '$2b$10$S/YVIkf6SNHTmZi12eoDVO3Ie5zH8nGt7AVJdVBTKg2BaWxM/bmm2',
-  },
-};
 
 const hashPassword = (password) => bcrypt.hashSync(password, 10);
 
@@ -53,6 +36,15 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
+  if (!req.session.user_id) {
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'You need to be logged in to see URLs',
+    };
+    res.render('error', templateVars);
+    return;
+  }
   const templateVars = {
     user: users[req.session.user_id],
     urls: getUrlsForUser(req.session.user_id, urlDatabase),
@@ -94,7 +86,6 @@ app.get('/login', (req, res) => {
     res.redirect('urls');
     return;
   }
-  // console.log(req.session.user_id);
   const templateVars = { user: users[req.session.user_id] };
   res.render('login', templateVars);
 });
@@ -104,7 +95,7 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  req.session.user_id = null;
+  req.session = null;
   res.redirect('/urls');
 });
 
@@ -128,7 +119,6 @@ app.get('/urls/:shortURL', (req, res) => {
     return;
   }
   if (!urlDatabase[req.params.shortURL]) {
-    console.log('not here!');
     templateVars.message = 'That URL does not exist';
     res.render('error', templateVars);
     return;
@@ -191,11 +181,21 @@ app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const ID = getUsersByEmail(email, users);
   if (!ID) {
-    res.status(403).send('e-mail not found!');
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'Email not found',
+    };
+    res.render('error', templateVars);
     return;
   }
   if (!bcrypt.compareSync(password, users[ID].password)) {
-    res.status(403).send('Password incorrect!');
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'Password is incorrect',
+    };
+    res.render('error', templateVars);
     return;
   }
   req.session.user_id = ID;
@@ -206,11 +206,21 @@ app.post('/register', (req, res) => {
   const id = generateRandomString();
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(400).send('Please fill out email and password');
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'Please complete the form',
+    };
+    res.render('error', templateVars);
     return;
   }
   if (getUsersByEmail(email, users)) {
-    res.status(400).send('Email already in use!');
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'Email is already in use.',
+    };
+    res.render('error', templateVars);
     return;
   }
   users[id] = {

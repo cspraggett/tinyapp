@@ -22,6 +22,7 @@ const generateRandomString = () => Math.random()
   .toString(36)
   .slice(2, 8);
 
+// Inserts or updates urlDatabase with longURL value.
 const updateUrlDatabase = (short, longURL, userID, urlDB) => {
   const lURL = longURL.includes('http://') ? longURL : `http://${longURL}`;
   urlDB[short] = { longURL: lURL, userID };
