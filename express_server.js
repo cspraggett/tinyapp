@@ -71,6 +71,15 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
+  if (!req.session.user_id) {
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'You must be logged in to create URLs',
+    };
+    res.render('error', templateVars);
+    return;
+  }
   const shortName = generateRandomString();
   updateUrlDatabase(
     shortName,
@@ -81,6 +90,11 @@ app.post('/urls', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+  if (req.session.user_id) {
+    res.redirect('urls');
+    return;
+  }
+  // console.log(req.session.user_id);
   const templateVars = { user: users[req.session.user_id] };
   res.render('login', templateVars);
 });
@@ -95,7 +109,11 @@ app.post('/logout', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  const templateVars = { user: users[req.session.user_id.toStrig()] };
+  if (req.session.user_id) {
+    res.redirect('urls');
+    return;
+  }
+  const templateVars = { user: users[req.session.user_id] };
   res.render('register', templateVars);
 });
 
@@ -129,17 +147,44 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   const short = req.params.shortURL;
   if (urlDatabase[short].userID === req.session.user_id) {
     delete urlDatabase[short];
+    res.redirect('/urls');
+  } else if (urlDatabase[short].userID !== req.session.user_id) {
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'You can\'t delete URLs that you didn\'t create ',
+    };
+    res.render('error', templateVars);
+  } else {
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'You need to be logged in to delete URLs ',
+    };
+    res.render('error', templateVars);
   }
-  res.redirect('/urls');
 });
 
 app.post('/urls/:shortURL/update', (req, res) => {
   const short = req.params.shortURL;
   if (urlDatabase[short].userID === req.session.user_id) {
-    // urlDatabase[req.params.shortURL].longURL = req.body.longURL;
     updateUrlDatabase(short, req.body.longURL, urlDatabase[short].userID, urlDatabase);
+    res.redirect('/urls');
+  } else if (urlDatabase[short].userID !== req.session.user_id) {
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'You can\'t edit URLs that you didn\'t create ',
+    };
+    res.render('error', templateVars);
+  } else {
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: getUrlsForUser(req.session.user_id, urlDatabase),
+      message: 'You need to be logged in to edit URLs',
+    };
+    res.render('error', templateVars);
   }
-  res.redirect('/urls');
 });
 
 app.post('/login', (req, res) => {
