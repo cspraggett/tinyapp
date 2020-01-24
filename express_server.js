@@ -4,13 +4,16 @@ const app = express();
 const bodyParser = require('body-parser');
 const cookiesession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const methodOverride = require('method-override');
 const {
   getUsersByEmail, getUrlsForUser, generateRandomString, updateUrlDatabase,
 } = require('./helpers');
 const { urlDatabase, users } = require('./data');
 
+
 const PORT = 8080;
 
+app.use(methodOverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cookiesession({
@@ -133,7 +136,7 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.delete('/urls/:shortURL/delete', (req, res) => {
   const short = req.params.shortURL;
   if (urlDatabase[short].userID === req.session.user_id) {
     delete urlDatabase[short];
@@ -155,7 +158,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   }
 });
 
-app.post('/urls/:shortURL/update', (req, res) => {
+app.put('/urls/:shortURL/update', (req, res) => {
   const short = req.params.shortURL;
   if (urlDatabase[short].userID === req.session.user_id) {
     updateUrlDatabase(short, req.body.longURL, urlDatabase[short].userID, urlDatabase);
